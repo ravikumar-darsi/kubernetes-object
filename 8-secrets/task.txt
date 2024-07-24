@@ -1,0 +1,99 @@
+controlplane ~ ➜  kubectl create secret generic de-seret --from-literal=M
+YSQL_ROOT_PASSWORD=password
+secret/de-seret created
+
+controlplane ~ ➜  kubectl get secret de-seret -o yaml
+apiVersion: v1
+data:
+  MYSQL_ROOT_PASSWORD: cGFzc3dvcmQ=
+kind: Secret
+metadata:
+  creationTimestamp: "2024-07-23T10:32:25Z"
+  name: de-seret
+  namespace: default
+  resourceVersion: "1583"
+  uid: 8af38a70-f301-4fec-befc-b6b926adacd3
+type: Opaque
+
+controlplane ~ ➜  kubectl get secret de-seret -o json
+{
+    "apiVersion": "v1",
+    "data": {
+        "MYSQL_ROOT_PASSWORD": "cGFzc3dvcmQ="
+    },
+    "kind": "Secret",
+    "metadata": {
+        "creationTimestamp": "2024-07-23T10:32:25Z",
+        "name": "de-seret",
+        "namespace": "default",
+        "resourceVersion": "1583",
+        "uid": "8af38a70-f301-4fec-befc-b6b926adacd3"
+    },
+    "type": "Opaque"
+}
+
+controlplane ~ ➜  echo -n "admin" | base64
+YWRtaW4=
+
+controlplane ~ ➜  echo -n "mysecretpass" | base64
+bXlzZWNyZXRwYXNz
+
+controlplane ~ ➜  vim mysecret.yaml
+
+controlplane ~ ➜  ls
+deployment-definition-1.yaml  mysecret.yaml
+
+controlplane ~ ➜  kubectl create -f mysecret.yaml 
+secret/mysecret created
+
+controlplane ~ ➜  vim readsecret.yaml
+
+controlplane ~ ➜  cat mysecret.yaml 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+data:
+  username: YWRtaW4=
+  password: bXlzZWNyZXRwYXNz
+type: Opaque
+
+controlplane ~ ➜  cat readsecret.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-env-pod
+spec:
+  containers:
+  - name: mycontainer
+    image: redis
+    env:
+      - name: SECRET_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: mysecret
+            key: username
+            optional: false # same as default; "mysecret" must exist
+                            # and include a key named "username"
+      - name: SECRET_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mysecret
+            key: password
+            optional: false # same as default; "mysecret" must exist
+                            # and include a key named "password"
+  restartPolicy: Never
+
+controlplane ~ ➜  kubectl create -f readsecret.yaml 
+pod/secret-env-pod created
+
+controlplane ~ ➜  kubectl get pod
+NAME             READY   STATUS    RESTARTS   AGE
+secret-env-pod   1/1     Running   0          39s
+
+controlplane ~ ➜  kubectl exec --stdin --tty secret-env-pod -- /bin/bash
+root@secret-env-pod:/data# echo  $SECRET_USERNAME
+admin
+root@secret-env-pod:/data# echo  $SECRET_PASSWORD
+mysecretpass
+root@secret-env-pod:/data# 
