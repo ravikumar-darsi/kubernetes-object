@@ -1,0 +1,89 @@
+controlplane ~ ➜  kubectl config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://127.0.0.1:6443
+  name: default
+contexts:
+- context:
+    cluster: default
+    user: default
+  name: default
+current-context: default
+kind: Config
+preferences: {}
+users:
+- name: default
+  user:
+    client-certificate-data: DATA+OMITTED
+    client-key-data: DATA+OMITTED
+
+controlplane ~ ➜  kubectl config current-context 
+default
+
+controlplane ~ ➜  kubectl run nginxpod --image=nginx --dry-run=client -o yaml > ngpod.yaml
+
+controlplane ~ ➜  cat ngpod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginxpod
+  name: nginxpod
+spec:
+  containers:
+  - image: nginx
+    name: nginxpod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+controlplane ~ ➜  vim ngpod.yaml 
+
+controlplane ~ ➜  cat ngpod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginxpod
+  name: nginxpod
+spec:
+  containers:
+  - image: nginx
+    name: nginxpod
+
+controlplane ~ ➜  kubectl create deployment ngdeploy --image=nginx --dry-run=client -o yaml > ngdep.yaml
+
+controlplane ~ ➜  cat ngdep.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ngdeploy
+  name: ngdeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ngdeploy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ngdeploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+
+
+
+https://kubernetes.io/docs/reference/kubectl/quick-reference/
