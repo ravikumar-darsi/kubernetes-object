@@ -1,0 +1,92 @@
+controlplane ~ ➜  vim mysqlpod.yaml
+
+controlplane ~ ➜  cat mysqlpod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dbpod
+spec:
+  containers:
+  - image: mysql:5.7
+    name: mysql
+    volumeMounts:
+    - mountPath: /var/lib/mysql
+      name: dbvol
+  volumes:
+  - name: dbvol
+    hostPath:
+      # directory location on host
+      path: /data
+      # this field is optional
+      type: DirectoryOrCreate
+
+controlplane ~ ➜  kubectl apply -f mysqlpod.yaml 
+pod/dbpod created
+
+controlplane ~ ➜  kubectl describe pod dbpod 
+Name:             dbpod
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             controlplane/192.168.50.29
+Start Time:       Tue, 23 Jul 2024 14:16:43 +0000
+Labels:           <none>
+Annotations:      <none>
+Status:           Running
+IP:               10.42.0.32
+IPs:
+  IP:  10.42.0.32
+Containers:
+  mysql:
+    Container ID:   containerd://c633356bafbe45fa480ee30e24de292b7c4918d6c195afd4d8087c103679e7fd
+    Image:          mysql:5.7
+    Image ID:       docker.io/library/mysql@sha256:4bc6bc963e6d8443453676cae56536f4b8156d78bae03c0145cbe47c2aad73bb
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       CrashLoopBackOff
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    1
+      Started:      Tue, 23 Jul 2024 14:18:21 +0000
+      Finished:     Tue, 23 Jul 2024 14:18:21 +0000
+    Ready:          False
+    Restart Count:  4
+    Environment:    <none>
+    Mounts:
+      /var/lib/mysql from dbvol (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jbs4c (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  dbvol:
+    Type:          HostPath (bare host directory volume)
+    Path:          /data
+    HostPathType:  DirectoryOrCreate
+  kube-api-access-jbs4c:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                 From               Message
+  ----     ------     ----                ----               -------
+  Normal   Scheduled  2m7s                default-scheduler  Successfully assigned default/dbpod to controlplane
+  Normal   Pulling    2m6s                kubelet            Pulling image "mysql:5.7"
+  Normal   Pulled     115s                kubelet            Successfully pulled image "mysql:5.7" in 11.914s (11.915s including waiting)
+  Normal   Pulled     29s (x4 over 113s)  kubelet            Container image "mysql:5.7" already present on machine
+  Normal   Created    29s (x5 over 114s)  kubelet            Created container mysql
+  Normal   Started    29s (x5 over 114s)  kubelet            Started container mysql
+  Warning  BackOff    13s (x9 over 112s)  kubelet            Back-off restarting failed container mysql in pod dbpod_default(4af8fc5c-e711-4f27-8ea8-a89dc2148525)
+
+controlplane ~ ➜  

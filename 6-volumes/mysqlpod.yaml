@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dbpod
+spec:
+  containers:
+    - image: mysql:5.7
+      name: mysql
+      volumeMounts:
+        - mountPath: /var/lib/mysql # the container stores data in this directory
+          name: dbvol
+  volumes:
+    - name: dbvol
+      hostPath:
+        # directory location on host
+        path: /data # this is for testing , in real time we will have EBS volume, or other resources
+        # and this /data would be our external storage mapped to our worker nodes
+        # this field is optional
+        type: DirectoryOrCreate
+# https://kubernetes.io/docs/concepts/storage/volumes/
