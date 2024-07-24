@@ -1,0 +1,173 @@
+controlplane ~ ➜  vim pod-setup.yaml
+
+controlplane ~ ➜  cat pod-setup.yaml 
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: webapp-pod
+  labels:
+    app: frontend
+    project: infinity
+spec:
+  containers:
+    - name: httpsd-container
+      image: httpd
+      ports:
+        - name: http-port
+          containerPort: 80
+
+controlplane ~ ➜  kubectl create -f pod-setup.yaml 
+pod/webapp-pod created
+
+controlplane ~ ➜  kubectl get pod
+NAME         READY   STATUS    RESTARTS   AGE
+webapp-pod   1/1     Running   0          13s
+
+controlplane ~ ➜  kubectl describe pod webapp-pod
+Name:             webapp-pod
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             controlplane/192.168.139.205
+Start Time:       Tue, 23 Jul 2024 11:19:07 +0000
+Labels:           app=frontend
+                  project=infinity
+Annotations:      <none>
+Status:           Running
+IP:               10.42.0.11
+IPs:
+  IP:  10.42.0.11
+Containers:
+  httpsd-container:
+    Container ID:   containerd://050d28530307f961f80c963b5099283a02caaf5bf2b5bb8d36e1d3b0c11e12a7
+    Image:          httpd
+    Image ID:       docker.io/library/httpd@sha256:332c24c4581c83ea365aa13d5db67e3778121d1fbe5e527dca842610c107b025
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 23 Jul 2024 11:19:10 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xpvfk (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-xpvfk:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  38s   default-scheduler  Successfully assigned default/webapp-pod to controlplane
+  Normal  Pulling    38s   kubelet            Pulling image "httpd"
+  Normal  Pulled     36s   kubelet            Successfully pulled image "httpd" in 1.565s (1.565s including waiting)
+  Normal  Created    36s   kubelet            Created container httpsd-container
+  Normal  Started    36s   kubelet            Started container httpsd-container
+
+controlplane ~ ➜  kubectl get pod webapp-pod -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2024-07-23T11:19:07Z"
+  labels:
+    app: frontend
+    project: infinity
+  name: webapp-pod
+ 
+
+controlplane ~ ➜  kubectl get pod webapp-pod -o json
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "creationTimestamp": "2024-07-23T11:19:07Z",
+        "labels": {
+            "app": "frontend",
+            "project": "infinity"
+        },
+        "name": "webapp-pod",
+        "namespace": "default",
+        "resourceVersion": "1608",
+        "uid": "a0042c7c-26f1-4496-a613-7d4f773a8d1f"
+    }
+
+
+controlplane ~ ➜  vim vproapp.yaml
+
+controlplane ~ ➜  kubectl create -f vproapp.yaml 
+pod/vproapp created
+
+controlplane ~ ➜  kubectl get pod
+NAME         READY   STATUS    RESTARTS   AGE
+webapp-pod   1/1     Running   0          8m48s
+vproapp      1/1     Running   0          12s
+
+controlplane ~ ➜  kubectl describe pod vproapp
+Name:             vproapp
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             controlplane/192.168.139.205
+Start Time:       Tue, 23 Jul 2024 11:27:43 +0000
+Labels:           app=vproapp
+Annotations:      <none>
+Status:           Running
+IP:               10.42.0.12
+IPs:
+  IP:  10.42.0.12
+Containers:
+  appcontainer:
+    Container ID:   containerd://17a3fbe2bc72da674d3735b8bbf911e6e90e8b9833ee1274e9b9c02f6b6415ae
+    Image:          ravikumard7/vprofileapp:latest
+    Image ID:       docker.io/ravikumard7/vprofileapp@sha256:c937e78829b50569c49fec5b185bcaea997a3cc90757ac44ce54d01ae2d6dc17
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 23 Jul 2024 11:27:52 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-wgf4k (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-wgf4k:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  25s   default-scheduler  Successfully assigned default/vproapp to controlplane
+  Normal  Pulling    25s   kubelet            Pulling image "ravikumard7/vprofileapp:latest"
+  Normal  Pulled     17s   kubelet            Successfully pulled image "ravikumard7/vprofileapp:latest" in 7.574s (7.574s including waiting)
+  Normal  Created    17s   kubelet            Created container appcontainer
+  Normal  Started    17s   kubelet            Started container appcontainer
+
+ 
