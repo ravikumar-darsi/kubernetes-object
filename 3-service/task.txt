@@ -1,0 +1,96 @@
+controlplane ~/app ➜  ls
+vproapp-nodeport.yaml  vproapp.yaml
+
+controlplane ~/app ➜  cat vproapp.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vproapp
+  labels:
+    app: vproapp
+spec:
+  containers:
+    - name: appcontainer
+      image: ravikumard7/vprofileapp:latest
+      ports:
+        - name: vproapp-port
+          containerPort: 8080
+
+controlplane ~/app ➜  vim vproapp-nodeport.yaml 
+
+controlplane ~/app ➜  cat vproapp-nodeport.yaml
+apiVersion: v1
+kind: Service
+metadata:  
+  name: helloworld-service
+spec:
+  ports:
+    - port: 8090
+      nodePort: 30001
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: vproapp
+  type: NodePort
+
+controlplane ~/app ➜  kubectl create -f vproapp-nodeport.yaml 
+service/helloworld-service created
+
+controlplane ~ ➜  kubectl get svc
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)          AGE
+kubernetes           ClusterIP   10.43.0.1     <none>        443/TCP          28m
+helloworld-service   NodePort    10.43.15.98   <none>        8090:30001/TCP   73s
+
+controlplane ~ ➜  kubectl describe svc helloworld-service 
+Name:                     helloworld-service
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=vproapp
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.43.15.98
+IPs:                      10.43.15.98
+Port:                     <unset>  8090/TCP
+TargetPort:               8080/TCP
+NodePort:                 <unset>  30001/TCP
+Endpoints:                10.42.0.9:8080
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+controlplane ~ ➜  kubectl describe pod | grep IP
+IP:               10.42.0.9
+IPs:
+  IP:  10.42.0.9
+
+controlplane ~ ➜  kubectl delete svc helloworld-service 
+service "helloworld-service" deleted
+
+controlplane ~ ➜  vim vproapp-loadbalancer.yaml
+
+controlplane ~ ➜  cat vproapp-loadbalancer.yaml 
+apiVersion: v1
+kind: Service
+metadata:  
+  name: helloworld-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: vproapp
+  type: LoadBalancer
+
+controlplane ~ ➜  kubectl create -f vproapp-loadbalancer.yaml 
+service/helloworld-service created
+
+controlplane ~ ➜  kubectl get svc
+NAME                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes           ClusterIP      10.43.0.1      <none>        443/TCP        37m
+helloworld-service   LoadBalancer   10.43.35.192   <pending>     80:31171/TCP   15s
+
+Here in the pending state we will external  LoadBalancer endpoint we used get while creating load balancer in AWS 

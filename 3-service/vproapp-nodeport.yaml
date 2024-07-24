@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld-service
+spec:
+  ports:
+    - port: 8090
+      nodePort: 30001 # the NodePort starts from 30000
+      targetPort: 8080 # here we can name of the port which is vproapp-port this refers to the name in container section of vproapp.yaml
+      protocol: TCP
+  selector:
+    app: vproapp # the selector choose the labels
+  type: NodePort
