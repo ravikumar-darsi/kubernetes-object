@@ -1,0 +1,279 @@
+controlplane ~ ✖ vim deployment.yaml
+
+controlplane ~ ➜  cat deployment.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+controlplane ~ ➜  kubectl apply -f deployment.yaml 
+deployment.apps/nginx-deployment created
+
+controlplane ~ ➜  kubectl get deploy
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3/3     3            3           11s
+
+controlplane ~ ➜  kubectl get rs
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-86dcfdf4c6   3         3         3       19s
+
+controlplane ~ ➜  kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-86dcfdf4c6-v5pq9   1/1     Running   0          27s
+nginx-deployment-86dcfdf4c6-h88tx   1/1     Running   0          27s
+nginx-deployment-86dcfdf4c6-rm9jh   1/1     Running   0          27s
+
+controlplane ~ ➜  kubectl describe pod nginx-deployment-86dcfdf4c6-v5pq9    # here the Image: nginx:1.14.2 
+Name:             nginx-deployment-86dcfdf4c6-v5pq9
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             controlplane/192.168.50.29
+Start Time:       Tue, 23 Jul 2024 13:53:19 +0000
+Labels:           app=nginx
+                  pod-template-hash=86dcfdf4c6
+Annotations:      <none>
+Status:           Running
+IP:               10.42.0.17
+IPs:
+  IP:           10.42.0.17
+Controlled By:  ReplicaSet/nginx-deployment-86dcfdf4c6
+Containers:
+  nginx:
+    Container ID:   containerd://0c64f5cdf373a382500308ef9191bae0bd670f29637f1c8e201bf3f59431dea8
+    Image:          nginx:1.14.2
+    Image ID:       docker.io/library/nginx@sha256:f7988fb6c02e0ce69257d9bd9cf37ae20a60f1df7563c3a2a6abe24160306b8d
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 23 Jul 2024 13:53:23 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-dljzm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-dljzm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  63s   default-scheduler  Successfully assigned default/nginx-deployment-86dcfdf4c6-v5pq9 to controlplane
+  Normal  Pulling    63s   kubelet            Pulling image "nginx:1.14.2"
+  Normal  Pulled     60s   kubelet            Successfully pulled image "nginx:1.14.2" in 2.76s (2.76s including waiting)
+  Normal  Created    60s   kubelet            Created container nginx
+  Normal  Started    60s   kubelet            Started container nginx
+
+controlplane ~ ➜  vim deployment.yaml 
+
+Here we changed image version t0  nginx:1.16.1
+
+controlplane ~ ➜  kubectl apply -f deployment.yaml 
+deployment.apps/nginx-deployment configured
+
+controlplane ~ ➜  kubectl get pod
+NAME                                READY   STATUS              RESTARTS   AGE
+nginx-deployment-86dcfdf4c6-rm9jh   1/1     Running             0          3m55s
+nginx-deployment-848dd6cfb5-mhbpj   1/1     Running             0          6s
+nginx-deployment-848dd6cfb5-qw2vj   1/1     Running             0          1s
+nginx-deployment-86dcfdf4c6-h88tx   1/1     Terminating         0          3m55s
+nginx-deployment-848dd6cfb5-2fqbs   0/1     ContainerCreating   0          0s
+
+controlplane ~ ➜  kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-848dd6cfb5-mhbpj   1/1     Running   0          12s
+nginx-deployment-848dd6cfb5-qw2vj   1/1     Running   0          7s
+nginx-deployment-848dd6cfb5-2fqbs   1/1     Running   0          6s
+
+controlplane ~ ➜  kubectl get deploy
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3/3     3            3           4m12s
+
+controlplane ~ ➜  kubectl describe pod nginx-deployment-848dd6cfb5-mhbpj 
+Name:             nginx-deployment-848dd6cfb5-mhbpj
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             controlplane/192.168.50.29
+Start Time:       Tue, 23 Jul 2024 13:57:08 +0000
+Labels:           app=nginx
+                  pod-template-hash=848dd6cfb5
+Annotations:      <none>
+Status:           Running
+IP:               10.42.0.20
+IPs:
+  IP:           10.42.0.20
+Controlled By:  ReplicaSet/nginx-deployment-848dd6cfb5
+Containers:
+  nginx:
+    Container ID:   containerd://f8aa0375b2d44f06ba10427560d95535bda5d541aba29f42ed70d2968e182011
+    Image:          nginx:1.16.1
+    Image ID:       docker.io/library/nginx@sha256:d20aa6d1cae56fd17cd458f4807e0de462caf2336f0b70b5eeb69fcaaf30dd9c
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 23 Jul 2024 13:57:12 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-pqhwt (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-pqhwt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  39s   default-scheduler  Successfully assigned default/nginx-deployment-848dd6cfb5-mhbpj to controlplane
+  Normal  Pulling    39s   kubelet            Pulling image "nginx:1.16.1"
+  Normal  Pulled     36s   kubelet            Successfully pulled image "nginx:1.16.1" in 3.077s (3.077s including waiting)
+  Normal  Created    36s   kubelet            Created container nginx
+  Normal  Started    36s   kubelet            Started container nginx
+
+controlplane ~ ➜  kubectl get rs
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-848dd6cfb5   3         3         3       53s
+nginx-deployment-86dcfdf4c6   0         0         0       4m42s
+
+controlplane ~ ➜  kubectl describe deployments
+Name:                   nginx-deployment
+Namespace:              default
+CreationTimestamp:      Tue, 23 Jul 2024 13:53:19 +0000
+Labels:                 app=nginx
+Annotations:            deployment.kubernetes.io/revision: 2
+Selector:               app=nginx
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=nginx
+  Containers:
+   nginx:
+    Image:        nginx:1.16.1
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  nginx-deployment-86dcfdf4c6 (0/0 replicas created)
+NewReplicaSet:   nginx-deployment-848dd6cfb5 (3/3 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  5m37s  deployment-controller  Scaled up replica set nginx-deployment-86dcfdf4c6 to 3
+  Normal  ScalingReplicaSet  108s   deployment-controller  Scaled up replica set nginx-deployment-848dd6cfb5 to 1
+  Normal  ScalingReplicaSet  103s   deployment-controller  Scaled down replica set nginx-deployment-86dcfdf4c6 to 2 from 3
+  Normal  ScalingReplicaSet  103s   deployment-controller  Scaled up replica set nginx-deployment-848dd6cfb5 to 2 from 1
+  Normal  ScalingReplicaSet  102s   deployment-controller  Scaled down replica set nginx-deployment-86dcfdf4c6 to 1 from 2
+  Normal  ScalingReplicaSet  102s   deployment-controller  Scaled up replica set nginx-deployment-848dd6cfb5 to 3 from 2
+  Normal  ScalingReplicaSet  100s   deployment-controller  Scaled down replica set nginx-deployment-86dcfdf4c6 to 0 from 1
+
+controlplane ~ ➜  kubectl rollout undo deployment/nginx-deployment    this command to rollback to previous version
+deployment.apps/nginx-deployment rolled back
+
+
+controlplane ~ ➜  kubectl get rs
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-86dcfdf4c6   3         3         3       7m9s    ----> when we ran that command it went to previous version 
+nginx-deployment-848dd6cfb5   0         0         0       3m20s
+
+controlplane ~ ➜  kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-86dcfdf4c6-d54fh   1/1     Running   0          47s
+nginx-deployment-86dcfdf4c6-gm8np   1/1     Running   0          46s
+nginx-deployment-86dcfdf4c6-sv6xm   1/1     Running   0          45s
+
+controlplane ~ ➜  kubectl describe pod nginx-deployment-86dcfdf4c6-d54fh | grep Image
+    Image:          nginx:1.14.2
+    Image ID:       docker.io/library/nginx@sha256:f7988fb6c02e0ce69257d9bd9cf37ae20a60f1df7563c3a2a6abe24160306b8d
+
+controlplane ~ ➜  kubectl rollout history deployment/nginx-deployment    ----> this command gives the whole history 
+deployment.apps/nginx-deployment 
+REVISION  CHANGE-CAUSE
+2         <none>
+3         <none>
+
+
+controlplane ~ ➜  kubectl rollout undo deployment/nginx-deployment --to-revision=3
+deployment.apps/nginx-deployment skipped rollback (current template already matches revision 3)
+
+controlplane ~ ➜  kubectl rollout undo deployment/nginx-deployment --to-revision=2
+deployment.apps/nginx-deployment rolled back
+
+controlplane ~ ➜  kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-848dd6cfb5-8xvsc   1/1     Running   0          8s
+nginx-deployment-848dd6cfb5-7fsmb   1/1     Running   0          7s
+nginx-deployment-848dd6cfb5-lljvr   1/1     Running   0          5s
+
+controlplane ~ ➜  kubectl describe pod nginx-deployment-848dd6cfb5-8xvsc 
+| grep Image
+    Image:          nginx:1.16.1
+    Image ID:       docker.io/library/nginx@sha256:d20aa6d1cae56fd17cd458f4807e0de462caf2336f0b70b5eeb69fcaaf30dd9c
+
+controlplane ~ ➜  kubectl rollout undo deployment/nginx-deployment --to-revision=3
+deployment.apps/nginx-deployment rolled back
+
+controlplane ~ ➜  kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-86dcfdf4c6-qxgkf   1/1     Running   0          7s
+nginx-deployment-86dcfdf4c6-l4hmk   1/1     Running   0          6s
+nginx-deployment-86dcfdf4c6-22ph8   1/1     Running   0          4s
+
+controlplane ~ ➜  kubectl describe pod nginx-deployment-86dcfdf4c6-22ph8 
+| grep Image
+    Image:          nginx:1.14.2
+    Image ID:       docker.io/library/nginx@sha256:f7988fb6c02e0ce69257d9bd9cf37ae20a60f1df7563c3a2a6abe24160306b8d
