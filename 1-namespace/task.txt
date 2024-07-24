@@ -1,0 +1,81 @@
+controlplane ~ ➜  history
+    1  kubectl get ns
+    2  kubectl get all
+    3  kubectl get all --all-namespaces
+    4  kubectl get svc kube-system
+    5  history
+
+controlplane ~ ➜  kubectl get ns
+NAME              STATUS   AGE
+kube-system       Active   31m
+kube-public       Active   31m
+kube-node-lease   Active   31m
+default           Active   31m
+
+controlplane ~ ➜  kubectl get all
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.43.0.1    <none>        443/TCP   31m
+
+controlplane ~ ➜  kubectl get all --all-namespaces
+NAMESPACE     NAME                                          READY   STATUS      RESTARTS   AGE
+kube-system   pod/local-path-provisioner-84db5d44d9-d8tgx   1/1     Running     0          31m
+kube-system   pod/coredns-6799fbcd5-sqdld                   1/1     Running     0          31m
+kube-system   pod/helm-install-traefik-crd-nslrg            0/1     Completed   0          31m
+kube-system   pod/metrics-server-67c658944b-8dmvl           1/1     Running     0          31m
+kube-system   pod/helm-install-traefik-4xf59                0/1     Completed   2          31m
+kube-system   pod/svclb-traefik-48c999df-ncshk              2/2     Running     0          31m
+kube-system   pod/traefik-f4564c4f4-jd75r                   1/1     Running     0          31m
+
+NAMESPACE     NAME                     TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)                      AGE
+default       service/kubernetes       ClusterIP      10.43.0.1      <none>            443/TCP                      31m
+kube-system   service/kube-dns         ClusterIP      10.43.0.10     <none>            53/UDP,53/TCP,9153/TCP       31m
+kube-system   service/metrics-server   ClusterIP      10.43.24.191   <none>            443/TCP                      31m
+kube-system   service/traefik          LoadBalancer   10.43.9.72     192.168.139.205   80:30687/TCP,443:30403/TCP   31m
+
+NAMESPACE     NAME                                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+kube-system   daemonset.apps/svclb-traefik-48c999df   1         1         1       1            1           <none>          31m
+
+NAMESPACE     NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/local-path-provisioner   1/1     1            1           31m
+kube-system   deployment.apps/coredns                  1/1     1            1           31m
+kube-system   deployment.apps/metrics-server           1/1     1            1           31m
+kube-system   deployment.apps/traefik                  1/1     1            1           31m
+
+NAMESPACE     NAME                                                DESIRED   CURRENT   READY   AGE
+kube-system   replicaset.apps/local-path-provisioner-84db5d44d9   1         1         1       31m
+kube-system   replicaset.apps/coredns-6799fbcd5                   1         1         1       31m
+kube-system   replicaset.apps/metrics-server-67c658944b           1         1         1       31m
+kube-system   replicaset.apps/traefik-f4564c4f4                   1         1         1       31m
+
+NAMESPACE     NAME                                 COMPLETIONS   DURATION   AGE
+kube-system   job.batch/helm-install-traefik-crd   1/1           17s        31m
+kube-system   job.batch/helm-install-traefik       1/1           35s        31m
+
+
+controlplane ~ ✖ kubectl get svc -n kube-system
+NAME             TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)                      AGE
+kube-dns         ClusterIP      10.43.0.10     <none>            53/UDP,53/TCP,9153/TCP       32m
+metrics-server   ClusterIP      10.43.24.191   <none>            443/TCP                      32m
+traefik          LoadBalancer   10.43.9.72     192.168.139.205   80:30687/TCP,443:30403/TCP   31m
+
+controlplane ~ ➜  kubectl create ns namespace_demo
+The Namespace "namespace_demo" is invalid: metadata.name: Invalid value: "namespace_demo": a lowercase RFC 1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')
+
+controlplane ~ ✖ kubectl create ns kubekart
+namespace/kubekart created
+
+controlplane ~ ✖ kubectl run nginx1 --image=nginx -n kubekart
+pod/nginx1 created
+
+controlplane ~ ➜  kubectl run nginx1 --image=nginx -n kubekart
+Error from server (AlreadyExists): pods "nginx1" already exists
+
+controlplane ~ ✖ vim namespacedemo.yaml
+
+controlplane ~ ➜  kubectl apply -f namespacedemo.yaml 
+pod/nginx12 created
+
+controlplane ~ ➜  kubectl get pod -n kubekart
+NAME      READY   STATUS    RESTARTS   AGE
+nginx1    1/1     Running   0          3m32s
+nginx12   1/1     Running   0          15s
